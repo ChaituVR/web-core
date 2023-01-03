@@ -1,57 +1,119 @@
-import { useMemo, type ReactElement } from 'react'
-import groupBy from 'lodash/groupBy'
-import { Box, Divider, Grid, Typography } from '@mui/material'
+import { useMemo, useState, type ReactElement } from 'react'
+import { Box, Button, TextField, Typography } from '@mui/material'
 import type { SafeCollectibleResponse } from '@safe-global/safe-gateway-typescript-sdk'
-import NftCard from '../NftCard'
+import useIsGranted from '@/hooks/useIsGranted'
+import EnhancedTable from '@/components/common/EnhancedTable'
 import ImageFallback from '@/components/common/ImageFallback'
+import ExternalLink from '@/components/common/ExternalLink'
 
-const NftGrid = ({
-  collectibles,
-  onSendClick,
-}: {
+interface NftsTableProps {
   collectibles: SafeCollectibleResponse[]
   onSendClick?: (nft: SafeCollectibleResponse) => void
-}): ReactElement => {
-  const collections: Record<string, SafeCollectibleResponse[]> = useMemo(
-    () => groupBy(collectibles, 'address'),
-    [collectibles],
+}
+
+const NftGrid = ({ collectibles, onSendClick }: NftsTableProps): ReactElement => {
+  const isGranted = useIsGranted()
+  const [search, setSearch] = useState('')
+
+  const shouldHideActions = !isGranted
+
+  const headCells = useMemo(
+    () => [
+      {
+        id: 'collection',
+        label: 'Collection',
+        width: '30%',
+      },
+      {
+        id: 'id',
+        label: 'ID',
+      },
+      {
+        id: 'explorer',
+        label: 'Links',
+        width: '10%',
+      },
+      {
+        id: 'link',
+        label: '',
+        width: '10%',
+      },
+      {
+        id: 'actions',
+        label: '',
+        width: '20%',
+        hide: shouldHideActions,
+        sticky: true,
+      },
+    ],
+    [shouldHideActions],
   )
+
+  const rows = collectibles
+    .filter((nft) => nft.tokenName.toLowerCase().includes(search.toLowerCase()))
+    .map((item) => {
+      return {
+        collection: {
+          rawValue: item.tokenName,
+          content: (
+            <Typography>
+              {item.tokenName} ({item.tokenSymbol})
+            </Typography>
+          ),
+        },
+        id: {
+          rawValue: item.id,
+          content: (
+            <Box display="flex" alignItems="center" alignContent="center" gap={1}>
+              <ImageFallback
+                src={item.imageUri || item.logoUri}
+                alt={`${item.tokenName} collection icon`}
+                fallbackSrc="/images/common/nft-placeholder.png"
+                height="20"
+              />
+              <Typography sx={{ wordBreak: 'break-all' }}>#{item.id.slice(0, 30)}</Typography>
+            </Box>
+          ),
+        },
+        explorer: {
+          rawValue: item.address,
+          content: (
+            <>
+              <ExternalLink href={`https://etherscan.io/nft/${item.address}/${item.id}`}>
+                {item.address.slice(0, 6)}...{item.address.slice(-4)}
+              </ExternalLink>
+            </>
+          ),
+        },
+        link: {
+          rawValue: item.address,
+          content: (
+            <ExternalLink href={`https://opensea.io/assets/ethereum/${item.address}/${item.id}`}>OpenSea</ExternalLink>
+          ),
+        },
+        actions: {
+          rawValue: '',
+          sticky: true,
+          hide: shouldHideActions,
+          content: (
+            <Button variant="contained" color="primary" size="small" onClick={() => onSendClick?.(item)}>
+              Send
+            </Button>
+          ),
+        },
+      }
+    })
 
   return (
     <>
-      {Object.entries(collections).map(([address, nfts]) => {
-        const { logoUri, tokenName } = nfts[0]
-        return (
-          <Box key={address} pb={4}>
-            <Grid container alignItems="center" pb={2} spacing={2}>
-              <Grid item>
-                <ImageFallback
-                  src={logoUri}
-                  alt={`${tokenName} collection icon`}
-                  fallbackSrc="/images/common/nft-placeholder.png"
-                  height="45px"
-                />
-              </Grid>
-              <Grid item>
-                <Typography variant="h6" mb={1}>
-                  {tokenName}
-                </Typography>
-              </Grid>
-              <Grid item xs>
-                <Divider flexItem />
-              </Grid>
-            </Grid>
-
-            <Grid container spacing={3}>
-              {nfts.map((nft) => (
-                <Grid item xs={12} md={4} lg={3} key={nft.address + nft.id}>
-                  <NftCard nft={nft} onSendClick={onSendClick ? () => onSendClick(nft) : undefined} />
-                </Grid>
-              ))}
-            </Grid>
-          </Box>
-        )
-      })}
+      <TextField
+        label="Search"
+        variant="outlined"
+        fullWidth
+        onChange={(e) => setSearch(e.target.value)}
+        sx={{ mb: 2 }}
+      />
+      <EnhancedTable rows={rows} headCells={headCells} />
     </>
   )
 }

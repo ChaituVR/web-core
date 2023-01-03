@@ -40,6 +40,10 @@ type EnhancedHeadCell = {
 }
 
 function descendingComparator(a: EnhancedRow, b: EnhancedRow, orderBy: string) {
+  if (typeof b.cells.[orderBy].rawValue === 'string') {
+    return (b.cells[orderBy].rawValue as string).localeCompare(a.cells[orderBy].rawValue as string)
+  }
+
   if (b.cells[orderBy].rawValue < a.cells[orderBy].rawValue) {
     return -1
   }
