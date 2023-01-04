@@ -146,6 +146,8 @@ function EnhancedTable({ rows, headCells, mobileVariant, paginationKey, onRowCli
     setPage(0)
   }, [rowsPerPage, paginationKey])
 
+  const rowSx = onRowClick ? { cursor: 'pointer' } : undefined
+
   return (
     <Box sx={{ width: '100%' }}>
       <TableContainer component={Paper} sx={{ width: '100%', mb: 2 }}>
@@ -159,6 +161,7 @@ function EnhancedTable({ rows, headCells, mobileVariant, paginationKey, onRowCli
                   key={row.key ?? index}
                   selected={row.selected}
                   className={row.collapsed ? css.collapsedRow : undefined}
+                  sx={rowSx}
                   onClick={onRowClick ? (e) => onRowClick(e, row) : undefined}
                 >
                   {Object.entries(row.cells).map(([key, cell]) => (

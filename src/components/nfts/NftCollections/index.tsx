@@ -15,13 +15,13 @@ const NftCollections = () => {
   const [sendNft, setSendNft] = useState<SafeCollectibleResponse>()
   const isGranted = useIsGranted()
 
-  const [allNfts = [], error, loading] = useAsync(() => {
+  const [allNfts = [], error, loading] = useAsync<SafeCollectibleResponse[]>(() => {
     if (!safeAddress) return undefined
     return getCollectibles(safe.chainId, safeAddress)
   }, [safe.chainId, safeAddress])
 
   /* No NFTs to display */
-  if (!allNfts.length && !loading && !error) {
+  if (safeAddress && !allNfts.length && !loading && !error) {
     return <PagePlaceholder img={<NftIcon />} text="No NFTs available or none detected" />
   }
 
