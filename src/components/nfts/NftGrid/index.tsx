@@ -86,8 +86,7 @@ const Preview = ({
               <img
                 src={data.image_url}
                 alt="NFT preview"
-                height="100%"
-                style={{ display: 'block', maxWidth: '100%' }}
+                style={{ display: 'block', maxWidth: '100%', maxHeight: '200px' }}
               />
             </Box>
 
@@ -111,6 +110,7 @@ const NftGrid = ({ collectibles, onSendClick }: NftsTableProps): ReactElement =>
   const [search, setSearch] = useState('')
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   const [previewNft, setPreviewNft] = useState<SafeCollectibleResponse>()
+  const [selected, setSelected] = useState<SafeCollectibleResponse[]>([])
 
   const shouldHideActions = !isGranted
 
@@ -158,15 +158,19 @@ const NftGrid = ({ collectibles, onSendClick }: NftsTableProps): ReactElement =>
         cells: {
           checkbox: {
             rawValue: item.id,
-            content: <Checkbox />,
+            content: (
+              <Checkbox
+                onClick={(e) => {
+                  e.stopPropagation()
+                  const { checked } = e.target as HTMLInputElement
+                  setSelected((items) => (checked ? items.concat(item) : items.filter((i) => i.id !== item.id)))
+                }}
+              />
+            ),
           },
           collection: {
             rawValue: item.tokenName,
-            content: (
-              <Typography fontWeight="bold">
-                {item.tokenName} ({item.tokenSymbol})
-              </Typography>
-            ),
+            content: <Typography fontWeight="bold">{item.tokenName}</Typography>,
           },
           id: {
             rawValue: item.id,
@@ -178,7 +182,13 @@ const NftGrid = ({ collectibles, onSendClick }: NftsTableProps): ReactElement =>
                   fallbackSrc="/images/common/nft-placeholder.png"
                   height="20"
                 />
-                <Typography sx={{ wordBreak: 'break-all' }}>#{item.id.slice(0, 30)}</Typography>
+                {item.name ? (
+                  <Typography>{item.name}</Typography>
+                ) : (
+                  <Typography sx={{ wordBreak: 'break-all' }}>
+                    {item.tokenSymbol} #{item.id.slice(0, 30)}
+                  </Typography>
+                )}
               </Box>
             ),
           },
@@ -190,14 +200,6 @@ const NftGrid = ({ collectibles, onSendClick }: NftsTableProps): ReactElement =>
                   {item.address.slice(0, 6)}...{item.address.slice(-4)}
                 </ExternalLink>
               </>
-            ),
-          },
-          link: {
-            rawValue: item.address,
-            content: (
-              <ExternalLink href={`https://opensea.io/assets/ethereum/${item.address}/${item.id}`}>
-                OpenSea
-              </ExternalLink>
             ),
           },
           actions: {
@@ -236,12 +238,17 @@ const NftGrid = ({ collectibles, onSendClick }: NftsTableProps): ReactElement =>
       )}
 
       <Box my={2} display="flex" alignItems="center" gap={2}>
-        <Button onClick={() => alert('This is just a demo!')} variant="contained" size="small">
+        <Button
+          onClick={() => alert('This is just a demo!')}
+          variant="contained"
+          size="small"
+          disabled={!selected.length}
+        >
           Send selected
         </Button>
 
         <Typography variant="subtitle2" color="textSecondary">
-          Select one of more NFTs to send as a batch
+          {selected.length ? `${selected.length} NFTs selected` : 'Select one of more NFTs to send as a batch'}
         </Typography>
       </Box>
 
