@@ -1,5 +1,15 @@
 import { useMemo, useState, type ReactElement } from 'react'
-import { Box, Button, CircularProgress, InputAdornment, Popover, SvgIcon, TextField, Typography } from '@mui/material'
+import {
+  Box,
+  Button,
+  Checkbox,
+  CircularProgress,
+  InputAdornment,
+  Popover,
+  SvgIcon,
+  TextField,
+  Typography,
+} from '@mui/material'
 import SearchIcon from '@mui/icons-material/Search'
 import type { SafeCollectibleResponse } from '@safe-global/safe-gateway-typescript-sdk'
 import useIsGranted from '@/hooks/useIsGranted'
@@ -107,6 +117,11 @@ const NftGrid = ({ collectibles, onSendClick }: NftsTableProps): ReactElement =>
   const headCells = useMemo(
     () => [
       {
+        id: 'checkbox',
+        label: '',
+        width: '5%',
+      },
+      {
         id: 'collection',
         label: 'Collection',
         width: '30%',
@@ -141,6 +156,10 @@ const NftGrid = ({ collectibles, onSendClick }: NftsTableProps): ReactElement =>
     .map((item) => {
       return {
         cells: {
+          checkbox: {
+            rawValue: item.id,
+            content: <Checkbox />,
+          },
           collection: {
             rawValue: item.tokenName,
             content: (
@@ -171,6 +190,14 @@ const NftGrid = ({ collectibles, onSendClick }: NftsTableProps): ReactElement =>
                   {item.address.slice(0, 6)}...{item.address.slice(-4)}
                 </ExternalLink>
               </>
+            ),
+          },
+          link: {
+            rawValue: item.address,
+            content: (
+              <ExternalLink href={`https://opensea.io/assets/ethereum/${item.address}/${item.id}`}>
+                OpenSea
+              </ExternalLink>
             ),
           },
           actions: {
@@ -207,6 +234,16 @@ const NftGrid = ({ collectibles, onSendClick }: NftsTableProps): ReactElement =>
       {apiKey && anchorEl && previewNft && (
         <Preview nft={previewNft} anchorEl={anchorEl} onClose={() => setAnchorEl(null)} />
       )}
+
+      <Box my={2} display="flex" alignItems="center" gap={2}>
+        <Button onClick={() => alert('This is just a demo!')} variant="contained" size="small">
+          Send selected
+        </Button>
+
+        <Typography variant="subtitle2" color="textSecondary">
+          Select one of more NFTs to send as a batch
+        </Typography>
+      </Box>
 
       <EnhancedTable
         rows={rows}
