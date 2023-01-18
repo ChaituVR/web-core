@@ -1,5 +1,4 @@
-import type { ChangeEvent, ReactElement, ReactNode, SyntheticEvent } from 'react'
-import { useEffect } from 'react'
+import type { ChangeEvent, ReactNode } from 'react'
 import React, { useState } from 'react'
 import Box from '@mui/material/Box'
 import Table from '@mui/material/Table'
@@ -41,10 +40,6 @@ type EnhancedHeadCell = {
 }
 
 function descendingComparator(a: EnhancedRow, b: EnhancedRow, orderBy: string) {
-  if (typeof b.cells[orderBy].rawValue === 'string') {
-    return (b.cells[orderBy].rawValue as string).localeCompare(a.cells[orderBy].rawValue as string)
-  }
-
   if (b.cells[orderBy].rawValue < a.cells[orderBy].rawValue) {
     return -1
   }
@@ -112,19 +107,11 @@ type EnhancedTableProps = {
   rows: EnhancedRow[]
   headCells: EnhancedHeadCell[]
   mobileVariant?: boolean
-  paginationKey?: string
-  onRowClick?: (e: SyntheticEvent<HTMLTableRowElement>, row: EnhancedRow) => void
 }
 
 const pageSizes = [10, 25, 100]
 
-function EnhancedTable({
-  rows,
-  headCells,
-  mobileVariant,
-  paginationKey,
-  onRowClick,
-}: EnhancedTableProps): ReactElement {
+function EnhancedTable({ rows, headCells, mobileVariant }: EnhancedTableProps) {
   const [order, setOrder] = useState<'asc' | 'desc'>('asc')
   const [orderBy, setOrderBy] = useState<string>('')
   const [page, setPage] = useState<number>(0)
@@ -148,12 +135,6 @@ function EnhancedTable({
   const orderedRows = orderBy ? rows.slice().sort(getComparator(order, orderBy)) : rows
   const pagedRows = orderedRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
 
-  useEffect(() => {
-    setPage(0)
-  }, [rowsPerPage, paginationKey])
-
-  const rowSx = onRowClick ? { cursor: 'pointer' } : undefined
-
   return (
     <Box sx={{ width: '100%' }}>
       <TableContainer component={Paper} sx={{ width: '100%', mb: 2 }}>
@@ -167,8 +148,6 @@ function EnhancedTable({
                   key={row.key ?? index}
                   selected={row.selected}
                   className={row.collapsed ? css.collapsedRow : undefined}
-                  sx={rowSx}
-                  onClick={onRowClick ? (e) => onRowClick(e, row) : undefined}
                 >
                   {Object.entries(row.cells).map(([key, cell]) => (
                     <TableCell
