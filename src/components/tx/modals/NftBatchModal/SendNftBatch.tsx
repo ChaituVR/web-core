@@ -9,28 +9,25 @@ import SendToBlock from '@/components/tx/SendToBlock'
 
 enum Field {
   recipient = 'recipient',
-  tokenAddress = 'tokenAddress',
-  tokenId = 'tokenId',
 }
 
 type FormData = {
   [Field.recipient]: string
-  [Field.tokenAddress]: string
-  [Field.tokenId]: string
 }
 
-export type SendNftFormProps = {
+export type SendNftBatchProps = {
   onSubmit: (data: NftTransferParams) => void
   params: NftTransferParams
 }
 
 const NftItem = ({ image, name, description }: { image: string; name: string; description?: string }) => (
-  <Grid container spacing={1} alignItems="center" wrap="nowrap">
+  <Grid container spacing={1} alignItems="center" wrap="nowrap" my={1}>
     <Grid item>
       <Box width={20} height={20}>
         <ImageFallback src={image} fallbackSrc="/images/common/nft-placeholder.png" alt={name} height={20} />
       </Box>
     </Grid>
+
     <Grid item overflow="hidden">
       <Typography overflow="hidden" textOverflow="ellipsis">
         {name}
@@ -45,15 +42,13 @@ const NftItem = ({ image, name, description }: { image: string; name: string; de
   </Grid>
 )
 
-const SendNftForm = ({ params, onSubmit }: SendNftFormProps) => {
+const SendNftBatch = ({ params, onSubmit }: SendNftBatchProps) => {
   const addressBook = useAddressBook()
-  const { token } = params
+  const { tokens } = params
 
   const formMethods = useForm<FormData>({
     defaultValues: {
       [Field.recipient]: params.recipient || '',
-      [Field.tokenAddress]: token.address || '',
-      [Field.tokenId]: token.id || '',
     },
   })
   const { handleSubmit, watch, setValue } = formMethods
@@ -63,7 +58,7 @@ const SendNftForm = ({ params, onSubmit }: SendNftFormProps) => {
   const onFormSubmit = (data: FormData) => {
     onSubmit({
       recipient: data.recipient,
-      token,
+      tokens,
     })
   }
 
@@ -71,9 +66,13 @@ const SendNftForm = ({ params, onSubmit }: SendNftFormProps) => {
     <FormProvider {...formMethods}>
       <form onSubmit={handleSubmit(onFormSubmit)}>
         <DialogContent>
-          <SendFromBlock />
+          <SendFromBlock title={`Sending ${tokens.length} NFT${tokens.length > 1 ? 's' : ''} from`} />
 
-          <FormControl fullWidth sx={{ mb: 2, mt: 1 }}>
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <Typography color={({ palette }) => palette.text.secondary} pb={1}>
+              To
+            </Typography>
+
             {addressBook[recipient] ? (
               <Box onClick={() => setValue(Field.recipient, '')}>
                 <SendToBlock address={recipient} />
@@ -83,17 +82,14 @@ const SendNftForm = ({ params, onSubmit }: SendNftFormProps) => {
             )}
           </FormControl>
 
-          <FormControl fullWidth sx={{ mb: 2 }}>
-            <Typography color={({ palette }) => palette.text.secondary} pb={1}>
-              Token
-            </Typography>
-
+          {tokens.map((token) => (
             <NftItem
+              key={`${token.address}-${token.id}`}
               image={token.imageUri || token.logoUri}
               name={`${token.tokenName || token.tokenSymbol || ''} #${token.id}`}
               description={`Token ID: ${token.id}${token.name ? ` - ${token.name}` : ''}`}
             />
-          </FormControl>
+          ))}
         </DialogContent>
 
         <Button variant="contained" type="submit">
@@ -104,4 +100,4 @@ const SendNftForm = ({ params, onSubmit }: SendNftFormProps) => {
   )
 }
 
-export default SendNftForm
+export default SendNftBatch

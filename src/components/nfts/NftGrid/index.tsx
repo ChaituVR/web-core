@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactElement } from 'react'
+import { useMemo, type ReactElement } from 'react'
 import {
   Box,
   Button,
@@ -18,6 +18,7 @@ import ExternalLink from '@/components/common/ExternalLink'
 
 interface NftsTableProps {
   nfts: SafeCollectibleResponse[]
+  onSelect: (item: SafeCollectibleResponse, checked: boolean) => void
   onSendClick?: (nft: SafeCollectibleResponse) => void
 }
 
@@ -63,9 +64,7 @@ const headCells = [
   },
 ]
 
-const NftGrid = ({ nfts, onSendClick }: NftsTableProps): ReactElement => {
-  const [selected, setSelected] = useState<SafeCollectibleResponse[]>([])
-
+const NftGrid = ({ nfts, onSendClick, onSelect }: NftsTableProps): ReactElement => {
   const rows = useMemo(
     () =>
       nfts.map((item) => ({
@@ -78,7 +77,7 @@ const NftGrid = ({ nfts, onSendClick }: NftsTableProps): ReactElement => {
                 onClick={(e) => {
                   e.stopPropagation()
                   const { checked } = e.target as HTMLInputElement
-                  setSelected((items) => (checked ? items.concat(item) : items.filter((i) => i.id !== item.id)))
+                  onSelect(item, checked)
                 }}
               />
             ),
@@ -136,26 +135,11 @@ const NftGrid = ({ nfts, onSendClick }: NftsTableProps): ReactElement => {
           },
         },
       })),
-    [nfts, onSendClick],
+    [nfts, onSendClick, onSelect],
   )
 
   return (
     <>
-      <Box my={2} display="flex" alignItems="center" gap={2}>
-        <Button
-          onClick={() => alert('This is just a demo!')}
-          variant="contained"
-          size="small"
-          disabled={!selected.length}
-        >
-          Send selected
-        </Button>
-
-        <Typography variant="subtitle2" color="textSecondary">
-          {selected.length ? `${selected.length} NFTs selected` : 'Select one of more NFTs to send as a batch'}
-        </Typography>
-      </Box>
-
       <TableContainer component={Paper}>
         <Table aria-labelledby="tableTitle">
           <TableHead>

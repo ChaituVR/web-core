@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import type { SafeCollectiblesPage } from '@safe-global/safe-gateway-typescript-sdk'
 import { type SafeCollectibleResponse } from '@safe-global/safe-gateway-typescript-sdk'
-import { Box, Button, CircularProgress, Pagination } from '@mui/material'
+import { Box, Button, CircularProgress, Pagination, Typography } from '@mui/material'
 import ErrorMessage from '@/components/tx/ErrorMessage'
 import PagePlaceholder from '@/components/common/PagePlaceholder'
 import NftIcon from '@/public/images/common/nft.svg'
-import NftTransferModal from '@/components/tx/modals/NftTransferModal'
+import NftBatchModal from '@/components/tx/modals/NftBatchModal'
 import NftGrid from '../NftGrid'
 import useIsGranted from '@/hooks/useIsGranted'
 import useCollectibles from '@/hooks/useCollectibles'
@@ -15,8 +15,14 @@ const NftCollections = () => {
   const [nftPages, setNftPages] = useState<SafeCollectiblesPage[]>([])
   const [currentPage, setCurrentPage] = useState<number>(-1)
   const [nfts, error, loading] = useCollectibles(pageUrl)
-  const [sendNft, setSendNft] = useState<SafeCollectibleResponse>()
+  const [selectedNfts, setSelectedNfts] = useState<SafeCollectibleResponse[]>([])
+  const [sendNfts, setSendNfts] = useState<SafeCollectibleResponse[]>()
   const isGranted = useIsGranted()
+  const currentNfts = nftPages[currentPage]?.results
+
+  const onSelect = (token: SafeCollectibleResponse, checked: boolean) => {
+    setSelectedNfts((prev) => (checked ? prev.concat(token) : prev.filter((t) => t.id !== token.id)))
+  }
 
   useEffect(() => {
     if (nfts) {
@@ -30,15 +36,38 @@ const NftCollections = () => {
     return <PagePlaceholder img={<NftIcon />} text="No NFTs available or none detected" />
   }
 
-  const currentNfts = nftPages[currentPage]?.results
-
   return (
     <>
-      {/* Aggregated NFTs grouped by collection */}
       {currentNfts?.length > 0 && (
-        <NftGrid nfts={currentNfts} onSendClick={isGranted ? (nft) => setSendNft(nft) : undefined} />
+        <>
+          {/* Mass send button */}
+          <Box my={2} display="flex" alignItems="center" gap={2}>
+            <Button
+              onClick={() => setSendNfts(selectedNfts)}
+              variant="contained"
+              size="small"
+              disabled={!isGranted || !selectedNfts.length}
+            >
+              Send selected
+            </Button>
+
+            <Typography variant="subtitle2" color="textSecondary">
+              {selectedNfts.length
+                ? `${selectedNfts.length} NFTs selected`
+                : 'Select one of more NFTs to send as a batch'}
+            </Typography>
+          </Box>
+
+          {/* NFTs table */}
+          <NftGrid
+            nfts={currentNfts}
+            onSendClick={isGranted ? (token) => setSendNfts([token]) : undefined}
+            onSelect={onSelect}
+          />
+        </>
       )}
 
+      {/* Pagination */}
       <Box display="flex" alignItems="center" gap={1} mt={3}>
         <Pagination
           count={nftPages.length}
@@ -71,13 +100,13 @@ const NftCollections = () => {
       )}
 
       {/* Send NFT modal */}
-      {isGranted && sendNft && (
-        <NftTransferModal
-          onClose={() => setSendNft(undefined)}
+      {isGranted && sendNfts && (
+        <NftBatchModal
+          onClose={() => setSendNfts(undefined)}
           initialData={[
             {
               recipient: '',
-              token: sendNft,
+              tokens: sendNfts,
             },
           ]}
         />
