@@ -85,7 +85,7 @@ const NftGrid = ({ nfts, onSendClick }: NftsTableProps): ReactElement => {
           },
           collection: {
             rawValue: item.tokenName,
-            content: <Typography fontWeight="bold">{item.tokenName}</Typography>,
+            content: <Typography fontWeight="bold">{item.tokenName || item.tokenSymbol}</Typography>,
           },
           id: {
             rawValue: item.id,
