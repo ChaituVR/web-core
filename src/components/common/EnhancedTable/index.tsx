@@ -1,4 +1,4 @@
-import type { ChangeEvent, ReactNode, SyntheticEvent } from 'react'
+import type { ChangeEvent, ReactElement, ReactNode, SyntheticEvent } from 'react'
 import { useEffect } from 'react'
 import React, { useState } from 'react'
 import Box from '@mui/material/Box'
@@ -118,7 +118,13 @@ type EnhancedTableProps = {
 
 const pageSizes = [10, 25, 100]
 
-function EnhancedTable({ rows, headCells, mobileVariant, paginationKey, onRowClick }: EnhancedTableProps) {
+function EnhancedTable({
+  rows,
+  headCells,
+  mobileVariant,
+  paginationKey,
+  onRowClick,
+}: EnhancedTableProps): ReactElement {
   const [order, setOrder] = useState<'asc' | 'desc'>('asc')
   const [orderBy, setOrderBy] = useState<string>('')
   const [page, setPage] = useState<number>(0)
