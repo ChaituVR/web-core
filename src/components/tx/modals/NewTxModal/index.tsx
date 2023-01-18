@@ -3,11 +3,12 @@ import type { ReactElement } from 'react'
 
 import TokenTransferModal from '../TokenTransferModal'
 import RejectTxModal from '../RejectTxModal'
-import NftTransferModal from '../NftTransferModal'
 import { trackEvent, MODALS_EVENTS } from '@/services/analytics'
 import { SendAssetsField } from '../TokenTransferModal/SendAssetsForm'
 import CreationModal from './CreationModal'
 import ReplacementModal from './ReplacementModal'
+import { useRouter } from 'next/router'
+import { AppRoutes } from '@/config/routes'
 
 const NewTxModal = ({
   onClose,
@@ -18,8 +19,8 @@ const NewTxModal = ({
   recipient?: string
   txNonce?: number
 }): ReactElement => {
+  const router = useRouter()
   const [tokenModalOpen, setTokenModalOpen] = useState<boolean>(false)
-  const [nftsModalOpen, setNftModalOpen] = useState<boolean>(false)
   const [rejectModalOpen, setRejectModalOpen] = useState<boolean>(false)
   const isReplacement = txNonce !== undefined
 
@@ -31,7 +32,11 @@ const NewTxModal = ({
 
   const onNFTModalOpen = () => {
     trackEvent(MODALS_EVENTS.SEND_COLLECTIBLE)
-    setNftModalOpen(true)
+    router.push({
+      pathname: AppRoutes.balances.nfts,
+      query: { safe: router.query.safe },
+    })
+    onClose()
   }
 
   const onRejectModalOpen = () => {
@@ -45,10 +50,9 @@ const NewTxModal = ({
   }
 
   const sharedProps = {
-    open: !tokenModalOpen && !nftsModalOpen,
+    open: !tokenModalOpen,
     onClose,
     onTokenModalOpen,
-    onNFTModalOpen,
   }
 
   return (
@@ -59,6 +63,7 @@ const NewTxModal = ({
         <CreationModal
           shouldShowTxBuilder={!recipient}
           onContractInteraction={onContractInteraction}
+          onNFTModalOpen={onNFTModalOpen}
           {...sharedProps}
         />
       )}
@@ -69,8 +74,6 @@ const NewTxModal = ({
           initialData={[{ [SendAssetsField.recipient]: recipient, disableSpendingLimit: isReplacement }, { txNonce }]}
         />
       )}
-
-      {nftsModalOpen && <NftTransferModal onClose={onClose} initialData={[{ recipient }, { txNonce }]} />}
 
       {rejectModalOpen && typeof txNonce === 'number' ? (
         <RejectTxModal onClose={onClose} initialData={[txNonce]} />

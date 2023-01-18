@@ -1,40 +1,24 @@
 import { useMemo, useState, type ReactElement } from 'react'
-import { Box, Button, Checkbox, Popover, Typography } from '@mui/material'
+import {
+  Box,
+  Button,
+  Checkbox,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Typography,
+} from '@mui/material'
 import type { SafeCollectibleResponse } from '@safe-global/safe-gateway-typescript-sdk'
-import useIsGranted from '@/hooks/useIsGranted'
-import EnhancedTable from '@/components/common/EnhancedTable'
 import ImageFallback from '@/components/common/ImageFallback'
 import ExternalLink from '@/components/common/ExternalLink'
 
 interface NftsTableProps {
-  collectibles: SafeCollectibleResponse[]
+  nfts: SafeCollectibleResponse[]
   onSendClick?: (nft: SafeCollectibleResponse) => void
-}
-
-const Preview = ({
-  nft,
-  anchorEl,
-  onClose,
-}: {
-  nft: SafeCollectibleResponse
-  anchorEl: HTMLElement
-  onClose: () => void
-}) => {
-  return (
-    <Popover
-      open
-      anchorEl={anchorEl}
-      onClose={onClose}
-      anchorOrigin={{
-        vertical: 'bottom',
-        horizontal: 'left',
-      }}
-    >
-      <Box width="200px" height="200px" p={1}>
-        <img src={nft.imageUri} alt="NFT preview" style={{ display: 'block', maxWidth: '100%', maxHeight: '200px' }} />
-      </Box>
-    </Popover>
-  )
 }
 
 const linkTemplates: Array<{
@@ -51,114 +35,112 @@ const linkTemplates: Array<{
   },
 ]
 
-const NftGrid = ({ collectibles, onSendClick }: NftsTableProps): ReactElement => {
-  const isGranted = useIsGranted()
-  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
-  const [previewNft, setPreviewNft] = useState<SafeCollectibleResponse>()
+const headCells = [
+  {
+    id: 'checkbox',
+    label: '',
+    width: '1%',
+  },
+  {
+    id: 'collection',
+    label: 'Collection',
+    width: '40%',
+  },
+  {
+    id: 'id',
+    label: 'ID',
+    width: '40%',
+  },
+  {
+    id: 'links',
+    label: 'Links',
+    width: '10%',
+  },
+  {
+    id: 'actions',
+    label: '',
+    width: '9%',
+  },
+]
+
+const NftGrid = ({ nfts, onSendClick }: NftsTableProps): ReactElement => {
   const [selected, setSelected] = useState<SafeCollectibleResponse[]>([])
 
-  const shouldHideActions = !isGranted
-
-  const headCells = useMemo(
-    () => [
-      {
-        id: 'checkbox',
-        label: '',
-        width: '5%',
-      },
-      {
-        id: 'collection',
-        label: 'Collection',
-        width: '30%',
-      },
-      {
-        id: 'id',
-        label: 'ID',
-      },
-      {
-        id: 'links',
-        label: 'Links',
-        width: '10%',
-      },
-      {
-        id: 'actions',
-        label: '',
-        hide: shouldHideActions,
-        sticky: true,
-      },
-    ],
-    [shouldHideActions],
-  )
-
-  const rows = collectibles.map((item) => {
-    return {
-      cells: {
-        checkbox: {
-          rawValue: item.id,
-          content: (
-            <Checkbox
-              onClick={(e) => {
-                e.stopPropagation()
-                const { checked } = e.target as HTMLInputElement
-                setSelected((items) => (checked ? items.concat(item) : items.filter((i) => i.id !== item.id)))
-              }}
-            />
-          ),
-        },
-        collection: {
-          rawValue: item.tokenName,
-          content: <Typography fontWeight="bold">{item.tokenName}</Typography>,
-        },
-        id: {
-          rawValue: item.id,
-          content: (
-            <Box display="flex" alignItems="center" alignContent="center" gap={1}>
-              <ImageFallback
-                src={item.logoUri}
-                alt={`${item.tokenName} collection icon`}
-                fallbackSrc="/images/common/nft-placeholder.png"
-                height="20"
+  const rows = useMemo(
+    () =>
+      nfts.map((item) => ({
+        key: `${item.address}-${item.id}`,
+        cells: {
+          checkbox: {
+            rawValue: item.id,
+            content: (
+              <Checkbox
+                onClick={(e) => {
+                  e.stopPropagation()
+                  const { checked } = e.target as HTMLInputElement
+                  setSelected((items) => (checked ? items.concat(item) : items.filter((i) => i.id !== item.id)))
+                }}
               />
-              {item.name ? (
-                <Typography>{item.name}</Typography>
-              ) : (
-                <Typography sx={{ wordBreak: 'break-all' }}>
-                  {item.tokenSymbol} #{item.id.slice(0, 30)}
-                </Typography>
-              )}
-            </Box>
-          ),
+            ),
+          },
+          collection: {
+            rawValue: item.tokenName,
+            content: <Typography fontWeight="bold">{item.tokenName}</Typography>,
+          },
+          id: {
+            rawValue: item.id,
+            content: (
+              <Box display="flex" alignItems="center" alignContent="center" gap={1}>
+                <ImageFallback
+                  src={item.logoUri}
+                  alt={`${item.tokenName} collection icon`}
+                  fallbackSrc="/images/common/nft-placeholder.png"
+                  width="20"
+                  style={{ maxHeight: '20px' }}
+                />
+                {item.name ? (
+                  <Typography>{item.name}</Typography>
+                ) : (
+                  <Typography sx={{ wordBreak: 'break-all' }}>
+                    {item.tokenSymbol} #{item.id.slice(0, 20)}
+                  </Typography>
+                )}
+              </Box>
+            ),
+          },
+          links: {
+            rawValue: item.address,
+            content: (
+              <Box display="flex" alignItems="center" alignContent="center" gap={1}>
+                {linkTemplates.map(({ title, getUrl }) => (
+                  <ExternalLink href={getUrl(item)} key={title}>
+                    {title}
+                  </ExternalLink>
+                ))}
+              </Box>
+            ),
+          },
+          actions: {
+            rawValue: '',
+            content: (
+              <Button
+                variant="contained"
+                color="primary"
+                size="small"
+                onClick={() => onSendClick?.(item)}
+                disabled={!onSendClick}
+              >
+                Send
+              </Button>
+            ),
+          },
         },
-        links: {
-          rawValue: item.address,
-          content: (
-            <Box display="flex" alignItems="center" alignContent="center" gap={1}>
-              {linkTemplates.map(({ title, getUrl }) => (
-                <ExternalLink href={getUrl(item)} key={title}>
-                  {title}
-                </ExternalLink>
-              ))}
-            </Box>
-          ),
-        },
-        actions: {
-          rawValue: '',
-          sticky: true,
-          hide: shouldHideActions,
-          content: (
-            <Button variant="contained" color="primary" size="small" onClick={() => onSendClick?.(item)}>
-              Send
-            </Button>
-          ),
-        },
-      },
-    }
-  })
+      })),
+    [nfts, onSendClick],
+  )
 
   return (
     <>
-      {anchorEl && previewNft && <Preview nft={previewNft} anchorEl={anchorEl} onClose={() => setAnchorEl(null)} />}
-
       <Box my={2} display="flex" alignItems="center" gap={2}>
         <Button
           onClick={() => alert('This is just a demo!')}
@@ -174,19 +156,45 @@ const NftGrid = ({ collectibles, onSendClick }: NftsTableProps): ReactElement =>
         </Typography>
       </Box>
 
-      <EnhancedTable
-        rows={rows}
-        headCells={headCells}
-        onRowClick={(e, row) => {
-          const nft = collectibles.find(
-            (item) => item.address === row.cells.links.rawValue && item.id === row.cells.id.rawValue,
-          )
-          if (nft && e.target) {
-            setAnchorEl(e.target as HTMLTableRowElement)
-            setPreviewNft(nft)
-          }
-        }}
-      />
+      <TableContainer component={Paper}>
+        <Table aria-labelledby="tableTitle">
+          <TableHead>
+            <TableRow>
+              {headCells.map((headCell) => (
+                <TableCell
+                  key={headCell.id}
+                  align="left"
+                  padding="normal"
+                  sx={headCell.width ? { width: headCell.width } : undefined}
+                >
+                  {headCell.label}
+                </TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
+
+          <TableBody>
+            {rows.map((row) => (
+              <TableRow tabIndex={-1} key={row.key}>
+                {Object.entries(row.cells).map(([key, cell]) => (
+                  <TableCell key={key}>{cell.content}</TableCell>
+                ))}
+              </TableRow>
+            ))}
+
+            {/* Fill the rows up to 10 with empty rows */}
+            {Array.from({ length: 10 - rows.length }).map((_, index) => (
+              <TableRow tabIndex={-1} key={index}>
+                {headCells.map((headCell) => (
+                  <TableCell key={headCell.id}>
+                    <Box height="43px" />
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
     </>
   )
 }
