@@ -44,7 +44,7 @@ const NftCollections = () => {
       {allNfts?.length > 0 && (
         <>
           {/* Mass send button */}
-          <Box my={2} display="flex" alignItems="center" gap={1}>
+          <Box mb={2} display="flex" alignItems="center" gap={1}>
             <Box bgcolor="secondary.background" py={0.75} px={2} flex={1} borderRadius={1}>
               <Box display="flex" alignItems="center" gap={1}>
                 <SvgIcon component={ArrowIcon} inheritViewBox color="border" sx={{ width: 12, height: 12 }} />

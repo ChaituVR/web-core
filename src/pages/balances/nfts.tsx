@@ -1,7 +1,7 @@
 import { type ReactElement, memo } from 'react'
 import type { NextPage } from 'next'
 import Head from 'next/head'
-import { Box, Grid, Typography } from '@mui/material'
+import { Grid, Typography } from '@mui/material'
 import AssetsHeader from '@/components/balances/AssetsHeader'
 import NftCollections from '@/components/nfts/NftCollections'
 import { AppCard } from '@/components/safe-apps/AppCard'
@@ -17,19 +17,19 @@ const NftApps = memo(function NftApps(): ReactElement | null {
   }
 
   return (
-    <Box mb={4}>
+    <>
       <Typography component="h2" variant="subtitle1" fontWeight={700} my={2}>
         NFT Safe Apps
       </Typography>
 
       <Grid container spacing={3}>
         {nftApps.map((nftApp) => (
-          <Grid item xs={12} md={4} lg={3} key={nftApp.id}>
+          <Grid item xs={12} lg={12} md={4} key={nftApp.id}>
             <AppCard safeApp={nftApp} />
           </Grid>
         ))}
       </Grid>
-    </Box>
+    </>
   )
 })
 
@@ -43,9 +43,15 @@ const NFTs: NextPage = () => {
       <AssetsHeader />
 
       <main>
-        <NftApps />
+        <Grid container spacing={3}>
+          <Grid item md={12} lg={3} order={{ lg: 1 }}>
+            <NftApps />
+          </Grid>
 
-        <NftCollections />
+          <Grid item md={12} lg={9}>
+            <NftCollections />
+          </Grid>
+        </Grid>
       </main>
     </>
   )
