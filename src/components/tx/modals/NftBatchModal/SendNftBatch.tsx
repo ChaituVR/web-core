@@ -24,7 +24,7 @@ const NftItem = ({ image, name, description }: { image: string; name: string; de
   <Grid container spacing={1} alignItems="center" wrap="nowrap" my={1}>
     <Grid item>
       <Box width={20} height={20}>
-        <ImageFallback src={image} fallbackSrc="/images/common/nft-placeholder.png" alt={name} height={20} />
+        <ImageFallback src={image} fallbackSrc="/images/common/nft.svg" alt={name} height={20} />
       </Box>
     </Grid>
 
