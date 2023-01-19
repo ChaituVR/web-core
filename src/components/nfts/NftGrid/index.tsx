@@ -1,6 +1,7 @@
 import type { SyntheticEvent } from 'react'
+import { memo } from 'react'
 import { useCallback } from 'react'
-import { useMemo, type ReactElement } from 'react'
+import { type ReactElement } from 'react'
 import {
   Box,
   Checkbox,
@@ -34,7 +35,6 @@ interface NftsTableProps {
 
 const minRows = 10
 const iconSize = 20
-const iconStyle = { width: '100%', maxHeight: '100%' }
 
 const headCells = [
   {
@@ -66,6 +66,22 @@ const headCells = [
 
 const stopPropagation = (e: SyntheticEvent) => e.stopPropagation()
 
+const NftLogo = memo(function NftLogo({ src, title }: { src: string; title: string }): ReactElement {
+  return (
+    <Box width={iconSize} height={iconSize} mr={1} overflow="visible">
+      {src ? (
+        <ImageFallback
+          src={src}
+          alt={title}
+          fallbackComponent={<SvgIcon component={NftIcon} inheritViewBox width={iconSize} height={iconSize} />}
+          fallbackSrc=""
+          width="100%"
+        />
+      ) : null}
+    </Box>
+  )
+})
+
 const NftGrid = ({ nfts, selectedNfts, onSelect, onFilter }: NftsTableProps): ReactElement => {
   const chainId = useChainId()
   const linkTemplates = nftPlatforms[chainId]
@@ -75,11 +91,6 @@ const NftGrid = ({ nfts, selectedNfts, onSelect, onFilter }: NftsTableProps): Re
       onFilter(e.target.value.toLowerCase())
     },
     [onFilter],
-  )
-
-  const fallbackIcon = useMemo(
-    () => <SvgIcon component={NftIcon} inheritViewBox width={iconSize} height={iconSize} />,
-    [],
   )
 
   return (
@@ -144,15 +155,7 @@ const NftGrid = ({ nfts, selectedNfts, onSelect, onFilter }: NftsTableProps): Re
                 {/* Collection name */}
                 <TableCell>
                   <Box display="flex" alignItems="center" alignContent="center" gap={1}>
-                    <Box width={iconSize} height={iconSize} mr={1} sx={{ display: { xs: 'none' } }}>
-                      <ImageFallback
-                        src={item.logoUri}
-                        alt={`${item.tokenName} collection icon`}
-                        fallbackComponent={fallbackIcon}
-                        fallbackSrc=""
-                        style={iconStyle}
-                      />
-                    </Box>
+                    <NftLogo src={item.logoUri} title={`${item.tokenSymbol}`} />
 
                     <Typography>{item.tokenName || item.tokenSymbol}</Typography>
                   </Box>
@@ -161,17 +164,7 @@ const NftGrid = ({ nfts, selectedNfts, onSelect, onFilter }: NftsTableProps): Re
                 {/* Token ID */}
                 <TableCell>
                   <Box display="flex" alignItems="center" alignContent="center" gap={1}>
-                    <Box width={iconSize} height={iconSize} mr={1}>
-                      {item.imageUri ? (
-                        <ImageFallback
-                          src={item.imageUri}
-                          alt={`${item.tokenName} NFT preview`}
-                          fallbackComponent={fallbackIcon}
-                          fallbackSrc=""
-                          style={iconStyle}
-                        />
-                      ) : null}
-                    </Box>
+                    <NftLogo src={item.imageUri} title={`${item.tokenSymbol} #${item.id}`} />
 
                     <ExternalLink href={linkTemplates ? linkTemplates[0].getUrl(item) : ''} onClick={stopPropagation}>
                       <Typography sx={item.name ? undefined : { wordBreak: 'break-all' }}>

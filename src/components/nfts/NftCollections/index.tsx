@@ -60,7 +60,7 @@ const NftCollections = () => {
         <>
           {/* Batch send form */}
           <Box
-            pb="10.5px"
+            pb="12.5px"
             bgcolor="background.main"
             display="flex"
             alignItems="center"
