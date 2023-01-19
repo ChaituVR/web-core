@@ -39,6 +39,8 @@ const NftCollections = () => {
     return <PagePlaceholder img={<NftIcon />} text="No NFTs available or none detected" />
   }
 
+  const nftsText = `NFT${selectedNfts.length === 1 ? '' : 's'}`
+
   return (
     <>
       {allNfts?.length > 0 && (
@@ -49,9 +51,7 @@ const NftCollections = () => {
               <Box display="flex" alignItems="center" gap={1.5}>
                 <SvgIcon component={ArrowIcon} inheritViewBox color="border" sx={{ width: 12, height: 12 }} />
 
-                <Typography variant="body2">
-                  {`${selectedNfts.length} NFT${selectedNfts.length === 1 ? '' : 's'} selected`}
-                </Typography>
+                <Typography variant="body2">{`${selectedNfts.length} ${nftsText} selected`}</Typography>
               </Box>
             </Box>
 
@@ -74,7 +74,7 @@ const NftCollections = () => {
               size="small"
               disabled={!isGranted || !selectedNfts.length}
             >
-              {isGranted ? 'Send' : 'Read only'}
+              {!isGranted ? 'Read only' : selectedNfts.length ? `Send ${selectedNfts.length} ${nftsText}` : 'Send'}
             </Button>
           </Box>
 

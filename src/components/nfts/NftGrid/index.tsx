@@ -23,6 +23,7 @@ import ImageFallback from '@/components/common/ImageFallback'
 import ExternalLink from '@/components/common/ExternalLink'
 import useChainId from '@/hooks/useChainId'
 import { nftPlatforms } from '../config'
+import { OnboardingTooltip } from '@/components/common/OnboardingTooltip'
 
 interface NftsTableProps {
   nfts: SafeCollectibleResponse[]
@@ -117,6 +118,14 @@ const NftGrid = ({ nfts, selectedNfts, onSelect, onFilter }: NftsTableProps): Re
                         }}
                       />
                     </Box>
+                  ) : headCell.id === 'links' ? (
+                    <OnboardingTooltip
+                      text="Please note that the links to OpenSea and Blur are provided only for viewing NFTs. Both these apps do not support the Safe Wallet right now."
+                      widgetLocalStorageId="tooltip_nft_links"
+                      placement="top"
+                    >
+                      <span>{headCell.label}</span>
+                    </OnboardingTooltip>
                   ) : (
                     headCell.label
                   )}

@@ -20,11 +20,6 @@ export const nftPlatforms: Record<keyof typeof chains, Array<NftPlatform>> = {
       getUrl: (item) => `https://opensea.io/assets/${item.address}/${item.id}`,
     },
     {
-      title: 'LooksRare',
-      logo: '/images/common/nft-looksrare.svg',
-      getUrl: (item) => `https://looksrare.org/collections/${item.address}/${item.id}`,
-    },
-    {
       title: 'atomic0',
       logo: '/images/common/nft-atomic0.svg',
       getUrl: (item) => `https://atomic0.com/nft/${item.address}/${item.id}`,
