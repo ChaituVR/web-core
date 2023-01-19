@@ -1,5 +1,6 @@
-import { Box, Button, DialogContent, FormControl, Grid, Typography } from '@mui/material'
+import { Box, Button, DialogContent, FormControl, Grid, SvgIcon, Typography } from '@mui/material'
 import { FormProvider, useForm } from 'react-hook-form'
+import NftIcon from '@/public/images/common/nft.svg'
 import AddressBookInput from '@/components/common/AddressBookInput'
 import SendFromBlock from '../../SendFromBlock'
 import { type NftTransferParams } from '.'
@@ -24,7 +25,13 @@ const NftItem = ({ image, name, description }: { image: string; name: string; de
   <Grid container spacing={1} alignItems="center" wrap="nowrap" my={1}>
     <Grid item>
       <Box width={20} height={20}>
-        <ImageFallback src={image} fallbackSrc="/images/common/nft.svg" alt={name} height={20} />
+        <ImageFallback
+          src={image}
+          fallbackSrc=""
+          fallbackComponent={<SvgIcon component={NftIcon} inheritViewBox width={20} height={20} />}
+          alt={name}
+          height={20}
+        />
       </Box>
     </Grid>
 

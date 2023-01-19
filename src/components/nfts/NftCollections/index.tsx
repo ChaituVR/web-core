@@ -61,13 +61,7 @@ const NftCollections = () => {
           </Box>
 
           {/* NFTs table */}
-          <NftGrid
-            nfts={filteredNfts}
-            selectedNfts={selectedNfts}
-            onSendClick={isGranted ? (token) => setSendNfts([token]) : undefined}
-            onSelect={onSelect}
-            onFilter={setFilter}
-          />
+          <NftGrid nfts={filteredNfts} selectedNfts={selectedNfts} onSelect={onSelect} onFilter={setFilter} />
         </>
       )}
 

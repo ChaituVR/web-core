@@ -24,46 +24,8 @@ interface NftsTableProps {
   nfts: SafeCollectibleResponse[]
   selectedNfts: SafeCollectibleResponse[]
   onSelect: (item: SafeCollectibleResponse) => void
-  onSendClick?: (nft: SafeCollectibleResponse) => void
   onFilter: (value: string) => void
 }
-
-const linkTemplates: Array<{
-  title: string
-  getUrl: (nft: SafeCollectibleResponse) => string
-}> = [
-  {
-    title: 'Etherscan',
-    getUrl: (item) => `https://etherscan.io/nft/${item.address}/${item.id}`,
-  },
-  {
-    title: 'OpenSea',
-    getUrl: (item) => `https://opensea.io/assets/${item.address}/${item.id}`,
-  },
-]
-
-const headCells = [
-  {
-    id: 'collection',
-    label: 'Collection',
-    width: '35%',
-  },
-  {
-    id: 'id',
-    label: 'ID',
-    width: '35%',
-  },
-  {
-    id: 'links',
-    label: 'Links',
-    width: '25%',
-  },
-  {
-    id: 'checkbox',
-    label: '',
-    width: '5%',
-  },
-]
 
 type Row = {
   key: string
@@ -75,9 +37,63 @@ const minRows = 10
 const iconSize = 20
 const iconStyle = { width: '100%', maxHeight: '100%' }
 
+const linkTemplates: Array<{
+  title: string
+  logo: string
+  getUrl: (nft: SafeCollectibleResponse) => string
+}> = [
+  {
+    title: 'Etherscan',
+    logo: '/images/common/nft-etherscan.svg',
+    getUrl: (item) => `https://etherscan.io/nft/${item.address}/${item.id}`,
+  },
+  {
+    title: 'OpenSea',
+    logo: '/images/common/nft-opensea.svg',
+    getUrl: (item) => `https://opensea.io/assets/${item.address}/${item.id}`,
+  },
+  {
+    title: 'Blur',
+    logo: '/images/common/nft-blur.svg',
+    getUrl: (item) => `https://blur.io/asset/${item.address}/${item.id}`,
+  },
+  {
+    title: 'LooksRare',
+    logo: '/images/common/nft-looksrare.svg',
+    getUrl: (item) => `https://looksrare.org/collections/${item.address}/${item.id}`,
+  },
+]
+
+const headCells = [
+  {
+    id: 'collection',
+    label: 'Collection',
+    width: '35%',
+  },
+  {
+    id: 'id',
+    label: (
+      <>
+        <Box width={iconSize} component="img" mr={1} />
+        Token ID
+      </>
+    ),
+  },
+  {
+    id: 'links',
+    label: 'Links',
+    width: '10%',
+  },
+  {
+    id: 'checkbox',
+    label: '',
+    width: '5%',
+  },
+]
+
 const stopPropagation = (e: SyntheticEvent) => e.stopPropagation()
 
-const NftGrid = ({ nfts, selectedNfts, onSendClick, onSelect, onFilter }: NftsTableProps): ReactElement => {
+const NftGrid = ({ nfts, selectedNfts, onSelect, onFilter }: NftsTableProps): ReactElement => {
   const onFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onFilter(e.target.value.toLowerCase())
   }
@@ -89,7 +105,10 @@ const NftGrid = ({ nfts, selectedNfts, onSendClick, onSelect, onFilter }: NftsTa
     }
   }
 
-  const fallbackIcon = <SvgIcon component={NftIcon} inheritViewBox width={iconSize} height={iconSize} />
+  const fallbackIcon = useMemo(
+    () => <SvgIcon component={NftIcon} inheritViewBox width={iconSize} height={iconSize} />,
+    [],
+  )
 
   const rows: Row[] = useMemo(
     () =>
@@ -126,20 +145,18 @@ const NftGrid = ({ nfts, selectedNfts, onSendClick, onSelect, onFilter }: NftsTa
                 ) : null}
               </Box>
 
-              {item.name ? (
-                <Typography>{item.name}</Typography>
-              ) : (
-                <Typography sx={{ wordBreak: 'break-all' }}>
-                  {item.tokenSymbol} #{item.id.slice(0, 20)}
+              <ExternalLink href={linkTemplates[0].getUrl(item)} onClick={stopPropagation}>
+                <Typography sx={item.name ? undefined : { wordBreak: 'break-all' }}>
+                  {item.name || `${item.tokenSymbol} #${item.id.slice(0, 20)}`}
                 </Typography>
-              )}
+              </ExternalLink>
             </Box>
           ),
           links: (
-            <Box display="flex" alignItems="center" alignContent="center" gap={1}>
-              {linkTemplates.map(({ title, getUrl }) => (
-                <ExternalLink href={getUrl(item)} key={title} onClick={stopPropagation}>
-                  {title}
+            <Box display="flex" alignItems="center" alignContent="center" gap={1.5}>
+              {linkTemplates.map(({ title, logo, getUrl }) => (
+                <ExternalLink href={getUrl(item)} key={title} onClick={stopPropagation} noIcon>
+                  <img src={logo} width={24} height={24} alt={title} />
                 </ExternalLink>
               ))}
             </Box>
@@ -147,7 +164,7 @@ const NftGrid = ({ nfts, selectedNfts, onSendClick, onSelect, onFilter }: NftsTa
           checkbox: <Checkbox checked={selectedNfts.includes(item)} />,
         },
       })),
-    [nfts, selectedNfts, onSendClick, onSelect, fallbackIcon],
+    [nfts, selectedNfts, fallbackIcon],
   )
 
   return (
