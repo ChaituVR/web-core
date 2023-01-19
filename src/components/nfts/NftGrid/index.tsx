@@ -149,7 +149,7 @@ const NftGrid = ({ nfts, selectedNfts, onSelect, onFilter }: NftsTableProps): Re
                 {/* Collection name */}
                 <TableCell>
                   <Box display="flex" alignItems="center" alignContent="center" gap={1}>
-                    <Box width={iconSize} height={iconSize}>
+                    <Box width={iconSize} height={iconSize} mr={1}>
                       <ImageFallback
                         src={item.logoUri}
                         alt={`${item.tokenName} collection icon`}
@@ -166,7 +166,7 @@ const NftGrid = ({ nfts, selectedNfts, onSelect, onFilter }: NftsTableProps): Re
                 {/* Token ID */}
                 <TableCell>
                   <Box display="flex" alignItems="center" alignContent="center" gap={1}>
-                    <Box width={iconSize} height={iconSize}>
+                    <Box width={iconSize} height={iconSize} mr={1}>
                       {item.imageUri ? (
                         <ImageFallback
                           src={item.imageUri}

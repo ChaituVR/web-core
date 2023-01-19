@@ -46,7 +46,7 @@ const NftCollections = () => {
           {/* Mass send button */}
           <Box mb={2} display="flex" alignItems="center" gap={1}>
             <Box bgcolor="secondary.background" py={0.75} px={2} flex={1} borderRadius={1}>
-              <Box display="flex" alignItems="center" gap={1}>
+              <Box display="flex" alignItems="center" gap={1.5}>
                 <SvgIcon component={ArrowIcon} inheritViewBox color="border" sx={{ width: 12, height: 12 }} />
 
                 <Typography variant="body2">
@@ -59,7 +59,10 @@ const NftCollections = () => {
               onClick={() => setSelectedNfts([])}
               variant="outlined"
               size="small"
-              sx={{ py: '6px' }}
+              sx={{
+                py: selectedNfts.length ? '6px' : '7px',
+                mx: selectedNfts.length ? '0' : '1px',
+              }}
               disabled={!selectedNfts.length}
             >
               Deselect all
@@ -71,7 +74,7 @@ const NftCollections = () => {
               size="small"
               disabled={!isGranted || !selectedNfts.length}
             >
-              Send
+              {isGranted ? 'Send' : 'Read only'}
             </Button>
           </Box>
 
