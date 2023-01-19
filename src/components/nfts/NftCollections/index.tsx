@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { type SafeCollectibleResponse } from '@safe-global/safe-gateway-typescript-sdk'
-import { Box, Button, CircularProgress, Typography } from '@mui/material'
+import { Box, Button, CircularProgress, SvgIcon, Typography } from '@mui/material'
 import ErrorMessage from '@/components/tx/ErrorMessage'
 import PagePlaceholder from '@/components/common/PagePlaceholder'
 import NftIcon from '@/public/images/common/nft.svg'
+import ArrowIcon from '@/public/images/common/arrow-nw.svg'
 import NftBatchModal from '@/components/tx/modals/NftBatchModal'
 import NftGrid from '../NftGrid'
 import useIsGranted from '@/hooks/useIsGranted'
@@ -43,21 +44,35 @@ const NftCollections = () => {
       {allNfts?.length > 0 && (
         <>
           {/* Mass send button */}
-          <Box my={2} display="flex" alignItems="center" gap={2}>
+          <Box my={2} display="flex" alignItems="center" gap={1}>
+            <Box bgcolor="secondary.background" py={0.75} px={2} flex={1} borderRadius={1}>
+              <Box display="flex" alignItems="center" gap={1}>
+                <SvgIcon component={ArrowIcon} inheritViewBox color="border" sx={{ width: 12, height: 12 }} />
+
+                <Typography variant="body2">
+                  {`${selectedNfts.length} NFT${selectedNfts.length === 1 ? '' : 's'} selected`}
+                </Typography>
+              </Box>
+            </Box>
+
+            <Button
+              onClick={() => setSelectedNfts([])}
+              variant="outlined"
+              size="small"
+              sx={{ py: '6px' }}
+              disabled={!selectedNfts.length}
+            >
+              Deselect all
+            </Button>
+
             <Button
               onClick={() => setSendNfts(selectedNfts)}
               variant="contained"
               size="small"
               disabled={!isGranted || !selectedNfts.length}
             >
-              Send selected
+              Send
             </Button>
-
-            <Typography variant="subtitle2" color="textSecondary">
-              {selectedNfts.length
-                ? `${selectedNfts.length} NFTs selected`
-                : 'Select one of more NFTs to send as a batch'}
-            </Typography>
           </Box>
 
           {/* NFTs table */}

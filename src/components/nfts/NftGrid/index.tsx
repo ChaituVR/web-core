@@ -3,6 +3,7 @@ import { useMemo, type ReactElement } from 'react'
 import {
   Box,
   Checkbox,
+  InputAdornment,
   Paper,
   SvgIcon,
   Table,
@@ -25,12 +26,6 @@ interface NftsTableProps {
   selectedNfts: SafeCollectibleResponse[]
   onSelect: (item: SafeCollectibleResponse) => void
   onFilter: (value: string) => void
-}
-
-type Row = {
-  key: string
-  data: SafeCollectibleResponse
-  cells: Record<string, ReactElement>
 }
 
 const minRows = 10
@@ -87,7 +82,7 @@ const headCells = [
   {
     id: 'checkbox',
     label: '',
-    width: '5%',
+    width: '7%',
   },
 ]
 
@@ -98,73 +93,9 @@ const NftGrid = ({ nfts, selectedNfts, onSelect, onFilter }: NftsTableProps): Re
     onFilter(e.target.value.toLowerCase())
   }
 
-  const handleRowClick = (row: Row) => {
-    const item = nfts.find((nft) => nft === row.data)
-    if (item) {
-      onSelect(item)
-    }
-  }
-
   const fallbackIcon = useMemo(
     () => <SvgIcon component={NftIcon} inheritViewBox width={iconSize} height={iconSize} />,
     [],
-  )
-
-  const rows: Row[] = useMemo(
-    () =>
-      nfts.map((item) => ({
-        data: item,
-        key: `${item.address}-${item.id}`,
-        cells: {
-          collection: (
-            <Box display="flex" alignItems="center" alignContent="center" gap={1}>
-              <Box width={iconSize} height={iconSize}>
-                <ImageFallback
-                  src={item.logoUri}
-                  alt={`${item.tokenName} collection icon`}
-                  fallbackComponent={fallbackIcon}
-                  fallbackSrc=""
-                  style={iconStyle}
-                />
-              </Box>
-
-              <Typography fontWeight="bold">{item.tokenName || item.tokenSymbol}</Typography>
-            </Box>
-          ),
-          id: (
-            <Box display="flex" alignItems="center" alignContent="center" gap={1}>
-              <Box width={iconSize} height={iconSize}>
-                {item.imageUri ? (
-                  <ImageFallback
-                    src={item.imageUri}
-                    alt={`${item.tokenName} NFT preview`}
-                    fallbackComponent={fallbackIcon}
-                    fallbackSrc=""
-                    style={iconStyle}
-                  />
-                ) : null}
-              </Box>
-
-              <ExternalLink href={linkTemplates[0].getUrl(item)} onClick={stopPropagation}>
-                <Typography sx={item.name ? undefined : { wordBreak: 'break-all' }}>
-                  {item.name || `${item.tokenSymbol} #${item.id.slice(0, 20)}`}
-                </Typography>
-              </ExternalLink>
-            </Box>
-          ),
-          links: (
-            <Box display="flex" alignItems="center" alignContent="center" gap={1.5}>
-              {linkTemplates.map(({ title, logo, getUrl }) => (
-                <ExternalLink href={getUrl(item)} key={title} onClick={stopPropagation} noIcon>
-                  <img src={logo} width={24} height={24} alt={title} />
-                </ExternalLink>
-              ))}
-            </Box>
-          ),
-          checkbox: <Checkbox checked={selectedNfts.includes(item)} />,
-        },
-      })),
-    [nfts, selectedNfts, fallbackIcon],
   )
 
   return (
@@ -182,7 +113,6 @@ const NftGrid = ({ nfts, selectedNfts, onSelect, onFilter }: NftsTableProps): Re
                 >
                   {headCell.id === 'collection' ? (
                     <Box display="flex" alignItems="center" alignContent="center" gap={1}>
-                      <SvgIcon component={FilterAltIcon} />
                       <TextField
                         placeholder="Collection"
                         hiddenLabel
@@ -190,6 +120,19 @@ const NftGrid = ({ nfts, selectedNfts, onSelect, onFilter }: NftsTableProps): Re
                         size="small"
                         margin="none"
                         onChange={onFilterChange}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <SvgIcon
+                                component={FilterAltIcon}
+                                inheritViewBox
+                                color="border"
+                                sx={{ marginTop: -0.5 }}
+                              />
+                            </InputAdornment>
+                          ),
+                          disableUnderline: true,
+                        }}
                       />
                     </Box>
                   ) : (
@@ -201,17 +144,69 @@ const NftGrid = ({ nfts, selectedNfts, onSelect, onFilter }: NftsTableProps): Re
           </TableHead>
 
           <TableBody>
-            {rows.map((row) => (
-              <TableRow tabIndex={-1} key={row.key} onClick={() => handleRowClick(row)}>
-                {headCells.map((cell) => (
-                  <TableCell key={`${row.key}-${cell.id}`}>{row.cells[cell.id]}</TableCell>
-                ))}
+            {nfts.map((item) => (
+              <TableRow tabIndex={-1} key={`${item.address}-${item.id}`} onClick={() => onSelect(item)}>
+                {/* Collection name */}
+                <TableCell>
+                  <Box display="flex" alignItems="center" alignContent="center" gap={1}>
+                    <Box width={iconSize} height={iconSize}>
+                      <ImageFallback
+                        src={item.logoUri}
+                        alt={`${item.tokenName} collection icon`}
+                        fallbackComponent={fallbackIcon}
+                        fallbackSrc=""
+                        style={iconStyle}
+                      />
+                    </Box>
+
+                    <Typography>{item.tokenName || item.tokenSymbol}</Typography>
+                  </Box>
+                </TableCell>
+
+                {/* Token ID */}
+                <TableCell>
+                  <Box display="flex" alignItems="center" alignContent="center" gap={1}>
+                    <Box width={iconSize} height={iconSize}>
+                      {item.imageUri ? (
+                        <ImageFallback
+                          src={item.imageUri}
+                          alt={`${item.tokenName} NFT preview`}
+                          fallbackComponent={fallbackIcon}
+                          fallbackSrc=""
+                          style={iconStyle}
+                        />
+                      ) : null}
+                    </Box>
+
+                    <ExternalLink href={linkTemplates[0].getUrl(item)} onClick={stopPropagation}>
+                      <Typography sx={item.name ? undefined : { wordBreak: 'break-all' }}>
+                        {item.name || `${item.tokenSymbol} #${item.id.slice(0, 20)}`}
+                      </Typography>
+                    </ExternalLink>
+                  </Box>
+                </TableCell>
+
+                {/* Links */}
+                <TableCell>
+                  <Box display="flex" alignItems="center" alignContent="center" gap={1.5}>
+                    {linkTemplates.map(({ title, logo, getUrl }) => (
+                      <ExternalLink href={getUrl(item)} key={title} onClick={stopPropagation} noIcon>
+                        <img src={logo} width={24} height={24} alt={title} />
+                      </ExternalLink>
+                    ))}
+                  </Box>
+                </TableCell>
+
+                {/* Checkbox */}
+                <TableCell align="right">
+                  <Checkbox checked={selectedNfts.includes(item)} />
+                </TableCell>
               </TableRow>
             ))}
 
-            {/* Fill up the table up to N rows */}
-            {Array.from({ length: minRows - rows.length }).map((_, index) => (
-              <TableRow tabIndex={-1} key={index}>
+            {/* Fill up the table up to min rows */}
+            {Array.from({ length: minRows - nfts.length }).map((_, index) => (
+              <TableRow tabIndex={-1} key={index} sx={{ pointerEvents: 'none' }}>
                 {headCells.map((headCell) => (
                   <TableCell key={headCell.id}>
                     <Box height="42px" width="42px" />
