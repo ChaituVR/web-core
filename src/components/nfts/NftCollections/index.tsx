@@ -12,41 +12,63 @@ import useCollectibles from '@/hooks/useCollectibles'
 import InfiniteScroll from '@/components/common/InfiniteScroll'
 
 const NftCollections = () => {
+  // Track the current NFT page url
   const [pageUrl, setPageUrl] = useState<string>()
+  // Load NFTs from the backend
   const [nftPage, error, loading] = useCollectibles(pageUrl)
+  // Keep all loaded NFTs in one big array
   const [allNfts, setAllNfts] = useState<SafeCollectibleResponse[]>([])
+  // Selected NFTs
   const [selectedNfts, setSelectedNfts] = useState<SafeCollectibleResponse[]>([])
-  const [sendNfts, setSendNfts] = useState<SafeCollectibleResponse[]>()
+  // Modal open state
+  const [showSendModal, setShowSendModal] = useState<boolean>(false)
+  // Filter string
   const [filter, setFilter] = useState<string>('')
+  // Whether we can send NFTs
   const isGranted = useIsGranted()
 
+  // Add or remove NFT from the selected list on row click
   const onSelect = (token: SafeCollectibleResponse) => {
     setSelectedNfts((prev) => (prev.includes(token) ? prev.filter((t) => t !== token) : prev.concat(token)))
   }
 
+  // Filter by collection name or token address
   const filteredNfts = useMemo(() => {
-    return allNfts.filter((nft) => nft.tokenName.toLowerCase().includes(filter))
+    return allNfts.filter(
+      (nft) => nft.tokenName.toLowerCase().includes(filter) || nft.address.toLowerCase().includes(filter),
+    )
   }, [allNfts, filter])
 
+  // Add new NFTs to the accumulated list
   useEffect(() => {
     if (nftPage) {
       setAllNfts((prev) => prev.concat(nftPage.results))
     }
   }, [nftPage])
 
-  /* No NFTs to display */
+  // No NFTs to display
   if (nftPage && !nftPage.results.length) {
     return <PagePlaceholder img={<NftIcon />} text="No NFTs available or none detected" />
   }
 
   const nftsText = `NFT${selectedNfts.length === 1 ? '' : 's'}`
+  const noSelected = selectedNfts.length === 0
 
   return (
     <>
       {allNfts?.length > 0 && (
         <>
-          {/* Mass send button */}
-          <Box mb={2} display="flex" alignItems="center" gap={1}>
+          {/* Batch send form */}
+          <Box
+            pb="10.5px"
+            bgcolor="background.main"
+            display="flex"
+            alignItems="center"
+            gap={1}
+            position="sticky"
+            top="64px"
+            zIndex="100"
+          >
             <Box bgcolor="secondary.background" py={0.75} px={2} flex={1} borderRadius={1}>
               <Box display="flex" alignItems="center" gap={1.5}>
                 <SvgIcon component={ArrowIcon} inheritViewBox color="border" sx={{ width: 12, height: 12 }} />
@@ -56,23 +78,26 @@ const NftCollections = () => {
             </Box>
 
             <Button
-              onClick={() => setSelectedNfts([])}
+              onClick={() => setSelectedNfts(noSelected ? allNfts : [])}
               variant="outlined"
               size="small"
               sx={{
-                py: selectedNfts.length ? '6px' : '7px',
-                mx: selectedNfts.length ? '0' : '1px',
+                // The custom padding is needed to align the outlined button with the adjacent filled button
+                py: '6px',
+                minWidth: '10em',
               }}
-              disabled={!selectedNfts.length}
             >
-              Deselect all
+              {noSelected ? 'Select all' : 'Deselect all'}
             </Button>
 
             <Button
-              onClick={() => setSendNfts(selectedNfts)}
+              onClick={() => setShowSendModal(true)}
               variant="contained"
               size="small"
-              disabled={!isGranted || !selectedNfts.length}
+              disabled={!isGranted || noSelected}
+              sx={{
+                minWidth: '10em',
+              }}
             >
               {!isGranted ? 'Read only' : selectedNfts.length ? `Send ${selectedNfts.length} ${nftsText}` : 'Send'}
             </Button>
@@ -97,13 +122,13 @@ const NftCollections = () => {
       {!loading && nftPage?.next && <InfiniteScroll onLoadMore={() => setPageUrl(nftPage.next)} />}
 
       {/* Send NFT modal */}
-      {isGranted && sendNfts && (
+      {showSendModal && (
         <NftBatchModal
-          onClose={() => setSendNfts(undefined)}
+          onClose={() => setShowSendModal(false)}
           initialData={[
             {
               recipient: '',
-              tokens: sendNfts,
+              tokens: selectedNfts,
             },
           ]}
         />
