@@ -55,6 +55,7 @@ const headCells = [
     id: 'links',
     label: 'Links',
     width: '10%',
+    xsHidden: true,
   },
   {
     id: 'checkbox',
@@ -92,7 +93,10 @@ const NftGrid = ({ nfts, selectedNfts, onSelect, onFilter }: NftsTableProps): Re
                   key={headCell.id}
                   align="left"
                   padding="normal"
-                  sx={headCell.width ? { width: headCell.width } : undefined}
+                  sx={{
+                    display: headCell.xsHidden ? { xs: 'none', md: 'table-cell' } : undefined,
+                    width: headCell.width,
+                  }}
                 >
                   {headCell.id === 'collection' ? (
                     <Box display="flex" alignItems="center" alignContent="center" gap={1}>
@@ -140,7 +144,7 @@ const NftGrid = ({ nfts, selectedNfts, onSelect, onFilter }: NftsTableProps): Re
                 {/* Collection name */}
                 <TableCell>
                   <Box display="flex" alignItems="center" alignContent="center" gap={1}>
-                    <Box width={iconSize} height={iconSize} mr={1}>
+                    <Box width={iconSize} height={iconSize} mr={1} sx={{ display: { xs: 'none' } }}>
                       <ImageFallback
                         src={item.logoUri}
                         alt={`${item.tokenName} collection icon`}
@@ -178,8 +182,8 @@ const NftGrid = ({ nfts, selectedNfts, onSelect, onFilter }: NftsTableProps): Re
                 </TableCell>
 
                 {/* Links */}
-                <TableCell>
-                  <Box display="flex" alignItems="center" alignContent="center" gap={1.5}>
+                <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>
+                  <Box display="flex" alignItems="center" alignContent="center" gap={2.5}>
                     {linkTemplates?.map(({ title, logo, getUrl }) => (
                       <ExternalLink href={getUrl(item)} key={title} onClick={stopPropagation} noIcon>
                         <img src={logo} width={24} height={24} alt={title} />
@@ -199,7 +203,10 @@ const NftGrid = ({ nfts, selectedNfts, onSelect, onFilter }: NftsTableProps): Re
             {Array.from({ length: minRows - nfts.length }).map((_, index) => (
               <TableRow tabIndex={-1} key={index} sx={{ pointerEvents: 'none' }}>
                 {headCells.map((headCell) => (
-                  <TableCell key={headCell.id}>
+                  <TableCell
+                    key={headCell.id}
+                    sx={headCell.xsHidden ? { display: { xs: 'none', md: 'table-cell' } } : undefined}
+                  >
                     <Box height="42px" width="42px" />
                   </TableCell>
                 ))}
