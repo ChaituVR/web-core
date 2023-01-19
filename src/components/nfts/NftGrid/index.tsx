@@ -1,4 +1,5 @@
 import type { SyntheticEvent } from 'react'
+import { useCallback } from 'react'
 import { useMemo, type ReactElement } from 'react'
 import {
   Box,
@@ -20,6 +21,8 @@ import NftIcon from '@/public/images/common/nft.svg'
 import type { SafeCollectibleResponse } from '@safe-global/safe-gateway-typescript-sdk'
 import ImageFallback from '@/components/common/ImageFallback'
 import ExternalLink from '@/components/common/ExternalLink'
+import useChainId from '@/hooks/useChainId'
+import { nftPlatforms } from '../config'
 
 interface NftsTableProps {
   nfts: SafeCollectibleResponse[]
@@ -31,33 +34,6 @@ interface NftsTableProps {
 const minRows = 10
 const iconSize = 20
 const iconStyle = { width: '100%', maxHeight: '100%' }
-
-const linkTemplates: Array<{
-  title: string
-  logo: string
-  getUrl: (nft: SafeCollectibleResponse) => string
-}> = [
-  {
-    title: 'Etherscan',
-    logo: '/images/common/nft-etherscan.svg',
-    getUrl: (item) => `https://etherscan.io/nft/${item.address}/${item.id}`,
-  },
-  {
-    title: 'OpenSea',
-    logo: '/images/common/nft-opensea.svg',
-    getUrl: (item) => `https://opensea.io/assets/${item.address}/${item.id}`,
-  },
-  {
-    title: 'Blur',
-    logo: '/images/common/nft-blur.svg',
-    getUrl: (item) => `https://blur.io/asset/${item.address}/${item.id}`,
-  },
-  {
-    title: 'LooksRare',
-    logo: '/images/common/nft-looksrare.svg',
-    getUrl: (item) => `https://looksrare.org/collections/${item.address}/${item.id}`,
-  },
-]
 
 const headCells = [
   {
@@ -89,9 +65,15 @@ const headCells = [
 const stopPropagation = (e: SyntheticEvent) => e.stopPropagation()
 
 const NftGrid = ({ nfts, selectedNfts, onSelect, onFilter }: NftsTableProps): ReactElement => {
-  const onFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onFilter(e.target.value.toLowerCase())
-  }
+  const chainId = useChainId()
+  const linkTemplates = nftPlatforms[chainId]
+
+  const onFilterChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      onFilter(e.target.value.toLowerCase())
+    },
+    [onFilter],
+  )
 
   const fallbackIcon = useMemo(
     () => <SvgIcon component={NftIcon} inheritViewBox width={iconSize} height={iconSize} />,
@@ -178,7 +160,7 @@ const NftGrid = ({ nfts, selectedNfts, onSelect, onFilter }: NftsTableProps): Re
                       ) : null}
                     </Box>
 
-                    <ExternalLink href={linkTemplates[0].getUrl(item)} onClick={stopPropagation}>
+                    <ExternalLink href={linkTemplates ? linkTemplates[0].getUrl(item) : ''} onClick={stopPropagation}>
                       <Typography sx={item.name ? undefined : { wordBreak: 'break-all' }}>
                         {item.name || `${item.tokenSymbol} #${item.id.slice(0, 20)}`}
                       </Typography>
@@ -189,7 +171,7 @@ const NftGrid = ({ nfts, selectedNfts, onSelect, onFilter }: NftsTableProps): Re
                 {/* Links */}
                 <TableCell>
                   <Box display="flex" alignItems="center" alignContent="center" gap={1.5}>
-                    {linkTemplates.map(({ title, logo, getUrl }) => (
+                    {linkTemplates?.map(({ title, logo, getUrl }) => (
                       <ExternalLink href={getUrl(item)} key={title} onClick={stopPropagation} noIcon>
                         <img src={logo} width={24} height={24} alt={title} />
                       </ExternalLink>
