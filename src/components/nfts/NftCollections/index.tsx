@@ -59,21 +59,14 @@ const NftCollections = () => {
       {allNfts?.length > 0 && (
         <>
           {/* Batch send form */}
-          <Box
-            pb="12.5px"
-            bgcolor="background.main"
-            display="flex"
-            alignItems="center"
-            gap={1}
-            position="sticky"
-            top="64px"
-            zIndex="100"
-          >
-            <Box bgcolor="secondary.background" py={0.75} px={2} flex={1} borderRadius={1}>
+          <Box pb="12.5px" bgcolor="background.main" display="flex" alignItems="center" gap={1}>
+            <Box bgcolor="secondary.background" py={0.75} px={2} flex={1} borderRadius={1} mr={2}>
               <Box display="flex" alignItems="center" gap={1.5}>
                 <SvgIcon component={ArrowIcon} inheritViewBox color="border" sx={{ width: 12, height: 12 }} />
 
-                <Typography variant="body2">{`${selectedNfts.length} ${nftsText} selected`}</Typography>
+                <Typography variant="body2" lineHeight="inherit">
+                  {`${selectedNfts.length} ${nftsText} selected`}
+                </Typography>
               </Box>
             </Box>
 
